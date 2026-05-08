@@ -1,29 +1,30 @@
-# Build Stage
+# Stage 1: Build the React Application
 FROM node:18-alpine as builder
 
 WORKDIR /app
 
-# Copy package files
+# Copy package files and install dependencies
 COPY package.json package-lock.json ./
-
-# Install dependencies
 RUN npm ci
 
-# Copy the rest of the application code
+# Copy the rest of the application code and build
 COPY . .
-
-# Build the React app
 RUN npm run build
 
-# Production Stage
+
+# Stage 2: Serve the application with Nginx
 FROM nginx:alpine
 
-# Copy the build output to replace the default nginx contents.
+# Cloud Run dynamically assigns a port to this variable. Default to 8080.
+ENV PORT=8080
+
+# Copy the built React app from the builder stage
 COPY --from=builder /app/dist /usr/share/nginx/html
 
-# Copy the custom nginx configuration file
-COPY nginx.conf /etc/nginx/conf.d/default.conf.template
+# Nginx 1.19+ automatically processes templates in this directory and replaces ${PORT}
+COPY nginx.conf /etc/nginx/templates/default.conf.template
 
-# Cloud Run requires the container to listen on the port specified by the $PORT environment variable.
-# We use envsubst to replace $PORT in the nginx configuration file at startup.
-CMD sh -c "envsubst '\\$PORT' < /etc/nginx/conf.d/default.conf.template > /etc/nginx/conf.d/default.conf && nginx -g 'daemon off;'"
+# Informational expose
+EXPOSE 8080
+
+# The default nginx command automatically runs the templates and starts the server
