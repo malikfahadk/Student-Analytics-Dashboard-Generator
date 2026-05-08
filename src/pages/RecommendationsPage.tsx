@@ -11,7 +11,7 @@ export default function RecommendationsPage() {
   const processedData = useMemo(() => applyRiskEngine(standardizedData || []), [standardizedData]);
 
   const generateRecommendations = () => {
-    const recs = [];
+    const recs: any[] = [];
     if (processedData.length === 0) return recs;
     const total = processedData.length;
     
