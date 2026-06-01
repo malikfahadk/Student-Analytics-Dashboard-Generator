@@ -1,14 +1,14 @@
 import React, { useMemo } from 'react';
 import { useDataStore } from '../store/dataStore';
-import { applyRiskEngine } from '../utils/riskScoring';
+
 import { Download, FileText, FileSpreadsheet } from 'lucide-react';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import toast from 'react-hot-toast';
 
 export default function ExportReportPage() {
-  const { standardizedData } = useDataStore();
-  const processedData = useMemo(() => applyRiskEngine(standardizedData || []), [standardizedData]);
+  const { standardizedData, mlResults } = useDataStore();
+  const processedData = useMemo(() => mlResults ? mlResults.records : [], [mlResults]);
 
   const downloadCSV = (data: any[], filename: string) => {
     if (!data || data.length === 0) return toast.error("No data to export");

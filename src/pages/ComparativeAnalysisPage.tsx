@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from 'react';
 import { useDataStore } from '../store/dataStore';
-import { applyRiskEngine } from '../utils/riskScoring';
+
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, LineChart, Line } from 'recharts';
 import { Lightbulb, Users, BookOpen, Clock, Activity, CreditCard, Filter } from 'lucide-react';
 
@@ -15,9 +15,9 @@ const TABS = [
 ];
 
 export default function ComparativeAnalysisPage() {
-  const { standardizedData } = useDataStore();
+  const { standardizedData, mlResults } = useDataStore();
   const [activeTab, setActiveTab] = useState('Department');
-  const processedData = useMemo(() => applyRiskEngine(standardizedData || []), [standardizedData]);
+  const processedData = useMemo(() => mlResults ? mlResults.records : [], [mlResults]);
 
   const aggregateBy = (keyOrFn: string | ((d: any) => string)) => {
     const groups: Record<string, { count: number, sumCgpa: number, sumAtt: number, sumMarks: number, passCount: number, highRiskCount: number }> = {};

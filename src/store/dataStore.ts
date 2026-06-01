@@ -24,37 +24,39 @@ export interface StandardizedRecord {
   [key: string]: any;
 }
 
+import { MLAnalyzedRecord, MLModelResults } from '../utils/mlEngine';
+
 interface DataState {
   rawData: any[];
   standardizedData: StandardizedRecord[];
+  mlResults: MLModelResults | null;
   columnMapping: Record<string, string>;
   setRawData: (data: any[]) => void;
   setColumnMapping: (mapping: Record<string, string>) => void;
   setStandardizedData: (data: StandardizedRecord[]) => void;
+  setMLResults: (results: MLModelResults) => void;
   clearData: () => void;
 }
 
 export const useDataStore = create<DataState>((set) => ({
-  // Big data is stored purely in-memory to ensure lightning-fast performance and prevent localStorage size limits/freezes.
   rawData: [],
   standardizedData: [],
+  mlResults: null,
   columnMapping: JSON.parse(localStorage.getItem('columnMapping') || '{}'),
   
-  setRawData: (data) => {
-    set({ rawData: data });
-  },
+  setRawData: (data) => set({ rawData: data }),
   
   setColumnMapping: (mapping) => {
     localStorage.setItem('columnMapping', JSON.stringify(mapping));
     set({ columnMapping: mapping });
   },
   
-  setStandardizedData: (data) => {
-    set({ standardizedData: data });
-  },
+  setStandardizedData: (data) => set({ standardizedData: data }),
+
+  setMLResults: (results) => set({ mlResults: results }),
   
   clearData: () => {
     localStorage.removeItem('columnMapping');
-    set({ rawData: [], standardizedData: [], columnMapping: {} });
+    set({ rawData: [], standardizedData: [], mlResults: null, columnMapping: {} });
   }
 }));

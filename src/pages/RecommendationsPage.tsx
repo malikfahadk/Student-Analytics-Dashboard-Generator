@@ -1,14 +1,14 @@
 import React, { useMemo } from 'react';
 import { useDataStore } from '../store/dataStore';
-import { applyRiskEngine } from '../utils/riskScoring';
+
 import { Download, Target, AlertTriangle, ShieldCheck, HeartPulse, Landmark, Users, TrendingUp } from 'lucide-react';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import toast from 'react-hot-toast';
 
 export default function RecommendationsPage() {
-  const { standardizedData } = useDataStore();
-  const processedData = useMemo(() => applyRiskEngine(standardizedData || []), [standardizedData]);
+  const { standardizedData, mlResults } = useDataStore();
+  const processedData = useMemo(() => mlResults ? mlResults.records : [], [mlResults]);
 
   const generateRecommendations = () => {
     const recs: any[] = [];
