@@ -16,10 +16,40 @@ jobs:
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
 
-      - name: Push application to Hugging Face
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build Vite application
+        run: npm run build
+
+      - name: Prepare prebuilt Static Space
+        run: |
+          mkdir hf-deploy
+          cp -R dist/. hf-deploy/
+          cat > hf-deploy/README.md <<'EOF'
+          ---
+          title: Student Analytics Dashboard Generator
+          emoji: 📊
+          colorFrom: blue
+          colorTo: indigo
+          sdk: static
+          app_file: index.html
+          pinned: false
+          ---
+
+          # Student Analytics Dashboard Generator
+
+          Prebuilt React and Vite application deployed automatically from GitHub.
+          EOF
+
+      - name: Push prebuilt application to Hugging Face
         env:
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
         run: |
@@ -28,7 +58,11 @@ jobs:
             exit 1
           fi
 
+          cd hf-deploy
+          git init --initial-branch=main
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add .
+          git commit -m "Deploy prebuilt application"
           git remote add huggingface "https://Fahad727:${HF_TOKEN}@huggingface.co/spaces/Fahad727/student-analytics-dashboard"
           git push --force huggingface main
