@@ -16,3 +16,5 @@ An interactive academic decision-support dashboard built with React, TypeScript,
 ## Deployment
 
 This repository is configured for a free Hugging Face Static Space. Hugging Face installs the Node.js dependencies, runs `npm run build`, and serves the generated `dist/index.html`.
+
+Deployment target: [Fahad727/student-analytics-dashboard](https://huggingface.co/spaces/Fahad727/student-analytics-dashboard)
