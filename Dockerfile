@@ -1,30 +1,33 @@
-# Stage 1: Build the React Application
-FROM node:18-alpine as builder
+# Stage 1: Build the React application
+FROM node:18-alpine AS builder
 
 WORKDIR /app
 
-# Copy package files and install dependencies
+# Install dependencies before copying source to improve build caching
 COPY package.json package-lock.json ./
 RUN npm ci
 
-# Copy the rest of the application code and build
+# Build the production application
 COPY . .
 RUN npm run build
 
 
-# Stage 2: Serve the application with Nginx
+# Stage 2: Serve the production build with Nginx
 FROM nginx:alpine
 
-# Cloud Run dynamically assigns a port to this variable. Default to 8080.
-ENV PORT=8080
+# Hugging Face Docker Spaces exposes one public application port.
+ENV PORT=7860
 
-# Copy the built React app from the builder stage
-COPY --from=builder /app/dist /usr/share/nginx/html
+# Run safely as the non-root user recommended for Docker Spaces.
+RUN adduser -D -u 1000 user \
+    && chown -R user:user /var/cache/nginx /var/run /var/log/nginx /etc/nginx /usr/share/nginx/html
 
-# Nginx 1.19+ automatically processes templates in this directory and replaces ${PORT}
-COPY nginx.conf /etc/nginx/templates/default.conf.template
+# Copy the built React app and Nginx template.
+COPY --from=builder --chown=user:user /app/dist /usr/share/nginx/html
+COPY --chown=user:user nginx.conf /etc/nginx/templates/default.conf.template
 
-# Informational expose
-EXPOSE 8080
+USER user
 
-# The default nginx command automatically runs the templates and starts the server
+EXPOSE 7860
+
+CMD ["nginx", "-g", "daemon off;"]
